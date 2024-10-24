@@ -1,32 +1,66 @@
 import Foundation
 import WatchConnectivity
+//import watchKit
 
 class iOSWatchConnectivityManager: NSObject, WCSessionDelegate, ObservableObject {
     @Published var isConnected = false
     private var session: WCSession?
+    @Published var showDisconnectionNotification = false
 
-    override init() {
+    init(session:WCSession = .default) {
+        self.session = session
         super.init()
-        setupWatchConnectivity()
+//        setupWatchConnectivity()
+        session.delegate = self
+        session.activate()
     }
 
-    func setupWatchConnectivity() {
-        if WCSession.isSupported() {
-            session = WCSession.default
-            session?.delegate = self
-            session?.activate()
-            print("iOS: WCSession activation requested")
-        } else {
-            print("iOS: WatchConnectivity is not supported on this device.")
-        }
-    }
+//    func setupWatchConnectivity() {
+//        if WCSession.isSupported() {
+//            session = WCSession.default
+//            session?.delegate = self
+//            session?.activate()
+//            print("iOS: WCSession activation requested")
+//        } else {
+//            print("iOS: WatchConnectivity is not supported on this device.")
+//        }
+//    }
 
     private func updateConnectionStatus() {
         DispatchQueue.main.async {
             self.isConnected = self.session?.isReachable ?? false
         }
     }
+    
+    private func checkConnectionStatus() {
+        if let session = session {
+            let isActive = session.activationState == .activated
+//            let isCompanionAppInstalled = session.isCompanionAppInstalled
+            
+            DispatchQueue.main.async {
+                self.isConnected = isActive //&& isCompanionAppInstalled
+            }
+            
+            print("Watch: Connection status - Active: \(isActive), Companion App Installed: ---, Activation State: \(session.activationState.rawValue)")
+        } else {
+            DispatchQueue.main.async {
+                self.isConnected = false
+            }
+            print("Watch: WCSession is not initialized")
+        }
+    }
 
+    func session(_ session: WCSession, didReceiveMessage message: [String : Any], replyHandler: @escaping ([String : Any]) -> Void) {
+        print("Watch: Received message from iPhone: \(message)")
+        if message["requestConnectionStatus"] as? Bool == true {
+            replyHandler(["isConnected": isConnected])
+        } else {
+            replyHandler(["response": "Message received on Watch"])
+        }
+        checkConnectionStatus()
+    }
+    
+    
     func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
         print("Watch received message: \(message)")
         // Handle the message as needed
@@ -44,6 +78,15 @@ class iOSWatchConnectivityManager: NSObject, WCSessionDelegate, ObservableObject
 
     func sessionReachabilityDidChange(_ session: WCSession) {
         print("iOS: Watch reachability changed. Reachable: \(session.isReachable)")
+        DispatchQueue.main.async {
+                   let wasConnected = self.isConnected
+                   self.isConnected = session.isReachable
+                   
+                   // Trigger notification if disconnection occurs
+                   if wasConnected && !session.isReachable {
+                       self.showDisconnectionNotification = true
+                   }
+               }
         updateConnectionStatus()
     }
 
