@@ -16,11 +16,11 @@ struct ContentView: View {
                 .padding()
                 .foregroundColor(watchConnectivityManager.isConnected ? .green : .red)
             
-            Button("Send Message") {
-                watchConnectivityManager.sendMessageToWatch(message: ["message": "chala gya message mobile se ihone pr"])
-            }
+//            Button("Send Message") {
+//                watchConnectivityManager.sendMessageToWatch(message: ["message": "chala gya message mobile se ihone pr"])
+//            }
             
-            Text("Hello, Subhan!")
+            Text("Hello, Jason!")
         }
         .padding()
         .onChange(of: watchConnectivityManager.showDisconnectionNotification) { newValue in

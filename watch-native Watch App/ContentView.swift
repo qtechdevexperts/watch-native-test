@@ -13,12 +13,12 @@ struct ContentView: View {
                 .padding()
                 .foregroundColor(connectivityManager.isConnected ? .green : .red)
             
-            Button("send Message") {
-                connectivityManager.sendMessageToPhone(message: ["hello": "from Watch"])
-            }
+//            Button("send Message") {
+//                connectivityManager.sendMessageToPhone(message: ["hello": "from Watch"])
+//            }
         
             
-            Text("Hello, Ahmed!")
+            Text("Hello, John!")
         }.onAppear {
             connectivityManager.scheduleBackgroundRefresh()
             connectivityManager.syncConnectionStatus()
