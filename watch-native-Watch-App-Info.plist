@@ -3,8 +3,6 @@
 <plist version="1.0">
 <dict>
 	<key>WKBackgroundModes</key>
-	<array>
-		<string>workout-processing</string>
-	</array>
+	<array/>
 </dict>
 </plist>
